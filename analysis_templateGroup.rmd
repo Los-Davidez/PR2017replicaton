@@ -19,6 +19,8 @@ For each answer, include text by simply typing below the question. Include code 
 
 ```{r}
 attach(rawPharmacoData)
+attach(summarizedPharmacoData)
+df_summarized <- read.csv("summarizedPharmacoData.csv", header=TRUE)
 ```
 
 You may find it helpful to use the version control and code sharing system called GitHub to work together with your team so that all of you can edit the same document and keep track of its changes. Here is a [setup guide](https://github.com/datasciencelabs/2016/blob/master/lectures/git-and-github/setting-up-git.Rmd) and [brief introduction to Git and GitHub](https://github.com/datasciencelabs/2016/blob/master/lectures/git-and-github/version-control.Rmd) from another course. The mentors will be able to help if you run into problems. 
@@ -105,18 +107,158 @@ ggplot(df_raw, aes(viability)) +
 
 1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines (hint: code from Tutorial 2 may help).
 
+```{r}
+ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point()
+```
+
 
 
 
 2. Calculate correlation coefficients of the AUC in GDSC and CCLE for each drug (hint: code from Tutorial 2 may help). 
+```{r}
+
+cor(df_summarized$auc_CCLE, df_summarized$auc_GDSC)
+#0.67
+
+```
+
+
 
 3. Based on the scatterplot and correlation values, would you say that they tend to agree? Why or why not?
 
+```{r}
+#Based on the scatterplots and correlation values (0.66~), we can say that the auc scores for GDSC and CCLE have
+#a moderate positive correlation.
+```
+
+
 4. Does the AUC or IC50 suggest more agreement between the studies? 
+
+```{r}
+
+ggplot(df_summarized, aes(ic50_CCLE, ic50_GDSC)) + geom_point()
+cor(df_summarized$ic50_CCLE, df_summarized$ic50_GDSC)
+
+#AUC has a better correlation coefficient (0.66) than the IC50 correlation (0.31), aswell as it has a better scatterplot, thus showing more agreement in the AUC data.
+
+
+```
+
+
 
 5. Which drug do you think shows the most consistency between the studies? How about the least? 
 
+```{r}
+#ggplot(aes(x=-log10(ic50_GDSC), y=-log10(ic50_CCLE)), data=df_summarized) +
+ #   geom_point(cex=0.5) + 
+  #  facet_wrap(facets=~drug) +
+   # xlab("-log10(GDSC IC50)") +
+    #ylab("-log10(CCLE IC50)") 
+
+df_drug1 = df_summarized[df_summarized$drug == 'Nilotinib',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+df_drug1 = df_summarized[df_summarized$drug == '17-AAG',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'AZD0530',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'AZD6244',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'Crizotinib',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'Erlotinib',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'lapatinib',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'Nutlin-3',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+df_drug1 = df_summarized[df_summarized$drug == 'paclitaxel',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+df_drug1 = df_summarized[df_summarized$drug == 'PD-0325901',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+df_drug1 = df_summarized[df_summarized$drug == 'PD-0332991',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+df_drug1 = df_summarized[df_summarized$drug == 'PHA-665752',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+df_drug1 = df_summarized[df_summarized$drug == 'PLX4720',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+df_drug1 = df_summarized[df_summarized$drug == 'Sorafenib',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+df_drug1 = df_summarized[df_summarized$drug == 'TAE684',]
+print(df_drug1)
+cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
+
+
+#cor(df_summarized$ic50_GDSC, df_summarized$ic50_CCLE)
+'''
+[1] 0.1387774
+[1] 0.0972479
+[1] 0.2439113
+[1] 0.1295407
+[1] 0.02799307
+[1] 0.02695095
+[1] 0.1838831
+[1] 0.1798825
+[1] -0.07680486
+[1] 0.3184166
+[1] 0.08857265
+[1] 0.02586012
+[1] 0.2256514
+[1] 0.1667008
+[1] 0.01550111
+'''
+# Vemos que PD-0325901 tiene mayor correlacion (0.32) y por tanto mayor consistencia entre los dos estudios
+# Mientras TAE684 parece tener la menor correlacion con 0.01
+
+```
+
+
+
 6. If you calculated more than one type of correlation coefficient (for example Pearson and Spearman), how do they differ? Which do you think is a better summary of the consistency between the two studies? 
+
+```{r}
+cor(df_summarized$auc_CCLE, df_summarized$auc_GDSC, method = "spearman") #0.54
+
+#ggplot(df_summarized, aes(ic50_CCLE, ic50_GDSC)) + geom_point()
+cor(df_summarized$ic50_CCLE, df_summarized$ic50_GDSC, method = "spearman") #0.55
+
+
+
+```
+
+
 
 7. We have explored Pearson and Spearman correlation, but what about other correlation measures? For example, you could try out distance correlation, which is sensitive to nonlinear relationships. You can find this measure in the `energy` R package, which you'll need to install and load with the following commands:
 
@@ -130,6 +272,47 @@ ggplot(df_raw, aes(viability)) +
 ### Identifying biological factors that influence replicability of pharmacogenomic studies
 
 1. Are there any cell lines that seem to be consistently sensitive? (Hint: look for the 5 cell lines which seem the most resistant in both studies according to the average drug response by AUC; code from Tutorial 3 may help) What effect might this have on your conclusions and interpretations of the agreement between the studies? For example, do you observe any increase in replicability (as measured by correlation of drug response) if you exclude the most resistant cell lines?
+
+
+```{r}
+
+### 0 AUC Score = 100% Resistance to drug (No effect)
+
+library(tidyr)
+library(plyr)
+library(dplyr)
+drugAvg <- df_summarized %>% 
+              group_by(cellLine) %>%
+              summarise(mean_ic50_CCLE = mean(-log10(ic50_CCLE/10^6)), 
+                        mean_ic50_GDSC = mean(-log10(ic50_GDSC/10^6)),
+                        mean_auc_CCLE = mean(auc_CCLE),
+                        mean_auc_GDSC = mean(auc_GDSC)) 
+
+
+ggplot(drugAvg, aes(x=mean_auc_GDSC, y=mean_auc_CCLE)) +
+    geom_point(alpha=0.6) +
+   ggtitle("Average AUC value by cell line (averaged over drugs)")
+    
+drugAvg_CCLE <- drugAvg[order(drugAvg$mean_auc_CCLE),] #UACC-62, CHP-212, COLO-205, HT-29, SW48
+drugAvg_GDSC <- drugAvg[order(drugAvg$mean_auc_GDSC),] #CHP-212, WM-115, A375, C32, COLO-205
+
+print(drugAvg_CCLE)
+print(drugAvg_GDSC)
+
+# Looking at the top 5
+
+```
+```{r}
+library(ggplot2)
+AUC_study1 <- rbeta(200, 1, 5)
+AUC_study2 <- rbeta(200, 1, 5)
+resistant <- data.frame(AUC_study1, AUC_study2)
+ggplot(resistant, aes( y=AUC_study2, x=AUC_study1) ) +
+    geom_point() + ggtitle("Simulated AUC of resistant cell lines") +
+    xlim(0,1) + ylim(0,1)
+
+cor(AUC_study1, AUC_study2)
+```
 
 2. Classify each cell line as resistant or sensitive to a drug based on its AUC value (Hint: choose a cutoff for which cell lines with AUC below the cutoff are considered sensitive and explain your choice of cutoff(s); code from Tutorial 3 may help). Compare the resistance status of cell lines in GDSC and CCLE for each drug using either a scatterplot of AUC values colored by resistance/sensitivity in each study or a table.
 
