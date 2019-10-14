@@ -18,10 +18,9 @@ The questions below will help guide you in your analyses and interpretation of r
 For each answer, include text by simply typing below the question. Include code in code blocks (include three back ticks at the start and end of each code block):
 
 ```{r}
-library(dplyr)
 attach(rawPharmacoData)
 attach(summarizedPharmacoData)
-df_summarized <-read.csv("summarizedPharmacoData.csv", header=TRUE)
+df_summarized <- read.csv("summarizedPharmacoData.csv", header=TRUE)
 ```
 
 You may find it helpful to use the version control and code sharing system called GitHub to work together with your team so that all of you can edit the same document and keep track of its changes. Here is a [setup guide](https://github.com/datasciencelabs/2016/blob/master/lectures/git-and-github/setting-up-git.Rmd) and [brief introduction to Git and GitHub](https://github.com/datasciencelabs/2016/blob/master/lectures/git-and-github/version-control.Rmd) from another course. The mentors will be able to help if you run into problems. 
@@ -32,18 +31,10 @@ You may find it helpful to use the version control and code sharing system calle
 
 1. How many cell-lines are contained in the data?
 
+df_uniq <- unique(ra)
+length(df_uniq)
 
-```{r}
-#df_uniq <- unique(ra)
-#length(df_uniq)
 #Cell lines = 2557
-
-# ===> Les parece? :
-length(unique(rawPharmacoData$cellLine))
-# There are 288 cell-lines contained in the data.
-```
-
-
 
 2. What drug concentrations were used in each study?
 
@@ -94,16 +85,8 @@ length(df_raw$viability[df_raw$viability > 0 & df_raw$viability < 100])
 of variables are in the data? What does each column represents?
 
 ```{r}
-head(summarizedPharmacoData)
-str(summarizedPharmacoData)
 
-# The data has string variables and double variables.
-# V1 = cellLine
-# V2 = drug
-# V3 = ic50_CCLE
-# V4 = auc_CCLE
-# V5 = ic50_GDSC
-# V6 = auc_GDSC
+#I dont know man
 
 ```
 
@@ -310,6 +293,8 @@ ggplot(drugAvg, aes(x=mean_auc_GDSC, y=mean_auc_CCLE)) +
     geom_point(alpha=0.6) +
    ggtitle("Average AUC value by cell line (averaged over drugs)")
     
+#Higher Values = More Sensitive
+
 drugAvg_CCLE <- drugAvg[order(drugAvg$mean_auc_CCLE),] #UACC-62, CHP-212, COLO-205, HT-29, SW48
 drugAvg_GDSC <- drugAvg[order(drugAvg$mean_auc_GDSC),] #CHP-212, WM-115, A375, C32, COLO-205
 
@@ -333,9 +318,83 @@ cor(AUC_study1, AUC_study2)
 
 2. Classify each cell line as resistant or sensitive to a drug based on its AUC value (Hint: choose a cutoff for which cell lines with AUC below the cutoff are considered sensitive and explain your choice of cutoff(s); code from Tutorial 3 may help). Compare the resistance status of cell lines in GDSC and CCLE for each drug using either a scatterplot of AUC values colored by resistance/sensitivity in each study or a table.
 
+
+```{r}
+
+
+df_summarized_cf <- df_summarized %>% 
+              mutate(cutoff = ifelse(drug=="paclitaxel", 0.1, 0.1)) %>%
+              mutate(sensitivity_GDSC = factor(ifelse( auc_GDSC < cutoff, "Resistant", "Sensitive")), 
+                     sensitivity_CCLE = factor(ifelse( auc_CCLE < cutoff, "Resistant", "Sensitive"))) 
+table("GDSC"=df_summarized_cf$sensitivity_GDSC, "CCLE"=df_summarized_cf$sensitivity_CCLE)
+
+#print(df_summarized_cf)
+
+df_summarized_cf1 <- df_summarized_cf %>% 
+              mutate(category = paste(sensitivity_GDSC, sensitivity_CCLE)) %>%
+              mutate(category = revalue(category, c("Resistant Resistant" = "Both Resistant",
+                                                    "Sensitive Sensitive" = "Both Sensitive",
+                                                    "Resistant Sensitive" = "GDSC Resistant / CCLE Sensitive",
+                                                    "Sensitive Resistant" = "GDSC Sensitive / CCLE Resistant")))
+table(df_summarized_cf1$category)
+
+
+ggplot(aes(x=auc_GDSC, y=auc_CCLE, colour=category), data=df_summarized_cf1) +
+    geom_point(cex=0.5) + 
+    facet_wrap(facets=~drug) +
+    xlab("GDSC AUC") +
+    ylab("CCLE AUC") +
+    geom_hline(aes(yintercept=cutoff), colour="grey", alpha=0.75, lty=2) +
+    geom_vline(aes(xintercept=cutoff), colour="grey", alpha=0.75, lty=2) 
+
+```
+
+
 3. Compute the Matthews correlation coefficient for sensitivity status (from #2) of cell lines in GDSC and CCLE for each drug (Hint: code from Tutorial 3 may help). 
 
+```{r}
+
+
+mcc <- function (study1, study2)
+{
+  BS <- sum(study1 == "Sensitive" & study2 == "Sensitive") 
+  BR <- sum(study1 == "Resistant" & study2 == "Resistant") 
+  SR <- sum(study1 == "Sensitive" & study2 == "Resistant") 
+  RS <- sum(study1 == "Resistant" & study2 == "Sensitive") 
+  
+  if (BS+SR == 0 | BS+RS == 0 | BR+SR == 0 |  BR+RS ==0){
+    mcc <- ((BS*BR)-(SR*RS)) 
+  }else{
+    mcc <- ((BS*BR)-(SR*RS)) / sqrt(exp((log(BS+SR)+log(BS+RS)+log(BR+SR)+log(BR+RS))))
+  }
+  return(mcc)
+}
+drugCorrs <- df_summarized_cf1 %>% 
+  group_by(drug) %>% 
+  summarise(matthews_corr=mcc(sensitivity_GDSC, sensitivity_CCLE))
+drugCorrs
+ggplot(data=drugCorrs, aes(x=drug, y=matthews_corr)) +
+  geom_bar(stat="identity") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab("Drug")+
+  ylab("Matthews Correlation Coefficient")
+
+
+
+```
+
+
 4. Are there any drugs for which most or all cell lines seem to be resistant in both studies (Hint: for each cell line, look at its average response across all drugs; code from Tutorial 3 may help)? If so, what are the correlation values for these drugs? What do these results imply about the replicability of these studies?
+
+
+```{r}
+
+
+
+
+
+```
+
 
 5. Compare the Matthews correlation coefficient values by drug classes defined in Tutorial 3 (No effect, Narrow effect, Broad effect). Which drug class shows the most agreement between the studies? 
 
