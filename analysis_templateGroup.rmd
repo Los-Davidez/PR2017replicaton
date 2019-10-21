@@ -388,17 +388,37 @@ ggplot(data=drugCorrs, aes(x=drug, y=matthews_corr)) +
 
 
 ```{r}
+# PHA-665752, Nilotinib, lapatinib, Crizotinib, Erltinib
 
-
-
-
-
+#Correlation Values = 0.3, 0.35, 0.42, 0.36 0.43
 ```
 
 
 5. Compare the Matthews correlation coefficient values by drug classes defined in Tutorial 3 (No effect, Narrow effect, Broad effect). Which drug class shows the most agreement between the studies? 
 
+```{r}
+x <- c(0.13587324, 0.30018309, 0.43221037)
+mean(x)
+y  <- c(0.29738378, -0.03496447, 0.37324175, 0)
+mean(y)
+
+z <- (c(0.35583000, 0.42363536, 0.08562279, 0.41354685, 0.37051899, 0.12054494, 0.29344484, 0.38710483  ))
+mean(z)
+
+
+#  After taking the mean value of the correlation coefficients by drug class, we conclude that the narrow effect drugs have
+# the highest agreement between studies.
+```
+
 6. Would you say that the sensitivity results for the two studies tend to agree?
+
+```{r}
+
+# They do not tend to agree, as the correlation values show weak relationship between studies, the highest value not reaching
+# even 0.5
+
+```
+
 
 7. For one of the targeted drugs, examine the cell lines that were sensitive ih the CCLE and/or GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle (this will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on other websites). See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in the two studies agree with this?
 
