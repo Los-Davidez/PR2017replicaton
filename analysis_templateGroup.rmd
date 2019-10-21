@@ -126,6 +126,7 @@ ggplot(df_raw, aes(viability)) +
 
 ```{r}
 #ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point()
+
 ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point(cex=0.5) + facet_wrap(facets=~drug)
 ```
 
@@ -135,8 +136,10 @@ ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point(cex=0.5) + facet_wra
 2. Calculate correlation coefficients of the AUC in GDSC and CCLE for each drug (hint: code from Tutorial 2 may help). 
 ```{r}
 
-cor(df_summarized$auc_CCLE, df_summarized$auc_GDSC)
+#cor(df_summarized$auc_CCLE, df_summarized$auc_GDSC)
 #0.67
+
+df_summarized %>% group_by(drug) %>% summarize(correlation = cor(auc_CCLE, auc_GDSC))
 
 ```
 
