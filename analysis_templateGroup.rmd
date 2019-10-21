@@ -426,6 +426,52 @@ mean(z)
 
 1. Explore the response curves for several drug-cell line combinations. How many drugs-cell line combinations contain viability response values that would potentially enable them to be summarized into an IC50 value? You can answer this, for example, by checking whether there are viability values below 50%.
 
+```{r}
+rawFile <- "rawPharmacoData.csv"
+summarizedFile <- "summarizedPharmacoData.csv"
+if( !file.exists( rawFile ) ){
+    source("downloadData.R")
+}
+pharmacoData <- read.csv(rawFile)
+summarizedData <- read.csv(summarizedFile)
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+plotResponse <- function(drugA, cellLineA, addPublishedIC50=TRUE ){
+  pharSub <- filter( pharmacoData, drug==drugA, cellLine==cellLineA )
+  sumSub <- filter( summarizedData, drug==drugA, cellLine==cellLineA )
+  p <- ggplot( pharSub, aes( log10(concentration), viability, col=study)) +
+      geom_point(size=2.1) + geom_line(lwd=1.1) + ylim(0, 150)
+  if( addPublishedIC50 ){
+      p <- p + geom_vline( sumSub, xintercept=log10( sumSub[,"ic50_CCLE"] ), col="#d95f02", linetype="longdash") +
+          geom_vline( xintercept=log10( sumSub[,"ic50_GDSC"]), col="#1b9e77", linetype="longdash") +
+          geom_hline( yintercept=50, col="#00000050", linetype="longdash")
+  }
+  p <- p + scale_colour_manual( values = c("CCLE" = "#d95f02", "GDSC" = "#1b9e77" ))
+  xlims <- xlim( range(log10(c(pharSub$concentration, sumSub$ic50_CCLE, sumSub$ic50_GDSC ) ) ) )
+  p + xlims
+}
+```
+
+
+
+```{r}
+#The plot define above will visualize the viability scores as a function
+#of the drug concentrations in each study. The vertical dotted lines
+#display the IC50 value published from each study. Let's start by
+#exploring how the response curve for the drug 17-AAG behaves in the
+#cell-line H4.  Notice that this drug was reported to have consistent viability
+#responses between the two studies.
+
+plotResponse( drugA="17-AAG", cellLineA="H4", TRUE )
+```
+
+
+```{r}
+plotResponse( drugA="Nilotinib", cellLineA="22RV1" )
+```
+
+
 2. Analyze the re-calculations of IC50 and AUCs from the drug 17-AAG in the H4 cell-line and the drug Nilotinib cell-line in the 22RV1 cell-line. See the figure below and asnwer: which statistic is more roboust, IC50 or AUC? Which statistic is more generalizable, IC50 or AUC? Justify your answer with examples and/or using the whole data recalculations from the *mySummarizedData* variable.
 
 <img src="Figures/reproducible.png" width="400px" height="200px" />
