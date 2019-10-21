@@ -125,7 +125,8 @@ ggplot(df_raw, aes(viability)) +
 1. Create a scatterplot for each drug comparing the AUC in GDSC and CCLE for all cell lines (hint: code from Tutorial 2 may help).
 
 ```{r}
-ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point()
+#ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point()
+ggplot(df_summarized, aes(auc_CCLE, auc_GDSC)) + geom_point(cex=0.5) + facet_wrap(facets=~drug)
 ```
 
 
