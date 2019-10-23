@@ -170,99 +170,18 @@ cor(df_summarized$ic50_CCLE, df_summarized$ic50_GDSC)
 5. Which drug do you think shows the most consistency between the studies? How about the least? 
 
 ```{r}
-#ggplot(aes(x=-log10(ic50_GDSC), y=-log10(ic50_CCLE)), data=df_summarized) +
- #   geom_point(cex=0.5) + 
-  #  facet_wrap(facets=~drug) +
-   # xlab("-log10(GDSC IC50)") +
-    #ylab("-log10(CCLE IC50)") 
+ic50cor <- df_summarized %>% group_by(drug) %>% summarize(correlation = cor(ic50_CCLE, ic50_GDSC))
+auccor <- df_summarized %>% group_by(drug) %>% summarize(correlation = cor(auc_CCLE, auc_GDSC))
+cor_difference <- auccor$correlation - ic50cor$correlation
+cor_difference
+min(cor_difference)
+# 0.1334292
+# Sorafenib
+max(cor_difference)
+# 0.6332795
+# Nilotinib
 
-df_drug1 = df_summarized[df_summarized$drug == 'Nilotinib',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-df_drug1 = df_summarized[df_summarized$drug == '17-AAG',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'AZD0530',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'AZD6244',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'Crizotinib',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'Erlotinib',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'lapatinib',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'Nutlin-3',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-df_drug1 = df_summarized[df_summarized$drug == 'paclitaxel',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-df_drug1 = df_summarized[df_summarized$drug == 'PD-0325901',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-df_drug1 = df_summarized[df_summarized$drug == 'PD-0332991',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-df_drug1 = df_summarized[df_summarized$drug == 'PHA-665752',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-df_drug1 = df_summarized[df_summarized$drug == 'PLX4720',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-df_drug1 = df_summarized[df_summarized$drug == 'Sorafenib',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-df_drug1 = df_summarized[df_summarized$drug == 'TAE684',]
-print(df_drug1)
-cor(df_drug1$ic50_CCLE, df_drug1$ic50_GDSC)
-
-
-#cor(df_summarized$ic50_GDSC, df_summarized$ic50_CCLE)
-'''
-[1] 0.1387774
-[1] 0.0972479
-[1] 0.2439113
-[1] 0.1295407
-[1] 0.02799307
-[1] 0.02695095
-[1] 0.1838831
-[1] 0.1798825
-[1] -0.07680486
-[1] 0.3184166
-[1] 0.08857265
-[1] 0.02586012
-[1] 0.2256514
-[1] 0.1667008
-[1] 0.01550111
-'''
-# Vemos que PD-0325901 tiene mayor correlacion (0.32) y por tanto mayor consistencia entre los dos estudios
-# Mientras TAE684 parece tener la menor correlacion con 0.01
-
+# Sorafenib is the most consistent, Nilotinib is the least
 ```
 
 
