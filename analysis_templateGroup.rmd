@@ -256,19 +256,140 @@ cor(AUC_study1, AUC_study2)
 
 2. Classify each cell line as resistant or sensitive to a drug based on its AUC value (Hint: choose a cutoff for which cell lines with AUC below the cutoff are considered sensitive and explain your choice of cutoff(s); code from Tutorial 3 may help). Compare the resistance status of cell lines in GDSC and CCLE for each drug using either a scatterplot of AUC values colored by resistance/sensitivity in each study or a table.
 
+
+```{r}
+df_summarized_cf <- df_summarized %>% 
+              mutate(cutoff = ifelse(drug=="paclitaxel", 0.1, 0.1)) %>%
+              mutate(sensitivity_GDSC = factor(ifelse( auc_GDSC < cutoff, "Resistant", "Sensitive")), 
+                     sensitivity_CCLE = factor(ifelse( auc_CCLE < cutoff, "Resistant", "Sensitive"))) 
+table("GDSC"=df_summarized_cf$sensitivity_GDSC, "CCLE"=df_summarized_cf$sensitivity_CCLE)
+#print(df_summarized_cf)
+df_summarized_cf1 <- df_summarized_cf %>% 
+              mutate(category = paste(sensitivity_GDSC, sensitivity_CCLE)) %>%
+              mutate(category = revalue(category, c("Resistant Resistant" = "Both Resistant",
+                                                    "Sensitive Sensitive" = "Both Sensitive",
+                                                    "Resistant Sensitive" = "GDSC Resistant / CCLE Sensitive",
+                                                    "Sensitive Resistant" = "GDSC Sensitive / CCLE Resistant")))
+table(df_summarized_cf1$category)
+ggplot(aes(x=auc_GDSC, y=auc_CCLE, colour=category), data=df_summarized_cf1) +
+    geom_point(cex=0.5) + 
+    facet_wrap(facets=~drug) +
+    xlab("GDSC AUC") +
+    ylab("CCLE AUC") +
+    geom_hline(aes(yintercept=cutoff), colour="grey", alpha=0.75, lty=2) +
+    geom_vline(aes(xintercept=cutoff), colour="grey", alpha=0.75, lty=2) 
+```
+
+
 3. Compute the Matthews correlation coefficient for sensitivity status (from #2) of cell lines in GDSC and CCLE for each drug (Hint: code from Tutorial 3 may help). 
+
+```{r}
+mcc <- function (study1, study2)
+{
+  BS <- sum(study1 == "Sensitive" & study2 == "Sensitive") 
+  BR <- sum(study1 == "Resistant" & study2 == "Resistant") 
+  SR <- sum(study1 == "Sensitive" & study2 == "Resistant") 
+  RS <- sum(study1 == "Resistant" & study2 == "Sensitive") 
+  
+  if (BS+SR == 0 | BS+RS == 0 | BR+SR == 0 |  BR+RS ==0){
+    mcc <- ((BS*BR)-(SR*RS)) 
+  }else{
+    mcc <- ((BS*BR)-(SR*RS)) / sqrt(exp((log(BS+SR)+log(BS+RS)+log(BR+SR)+log(BR+RS))))
+  }
+  return(mcc)
+}
+drugCorrs <- df_summarized_cf1 %>% 
+  group_by(drug) %>% 
+  summarise(matthews_corr=mcc(sensitivity_GDSC, sensitivity_CCLE))
+drugCorrs
+ggplot(data=drugCorrs, aes(x=drug, y=matthews_corr)) +
+  geom_bar(stat="identity") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  xlab("Drug")+
+  ylab("Matthews Correlation Coefficient")
+```
+
 
 4. Are there any drugs for which most or all cell lines seem to be resistant in both studies (Hint: for each cell line, look at its average response across all drugs; code from Tutorial 3 may help)? If so, what are the correlation values for these drugs? What do these results imply about the replicability of these studies?
 
+
+```{r}
+# PHA-665752, Nilotinib, lapatinib, Crizotinib, Erltinib
+#Correlation Values = 0.3, 0.35, 0.42, 0.36 0.43
+```
+
+
 5. Compare the Matthews correlation coefficient values by drug classes defined in Tutorial 3 (No effect, Narrow effect, Broad effect). Which drug class shows the most agreement between the studies? 
 
+```{r}
+x <- c(0.13587324, 0.30018309, 0.43221037)
+mean(x)
+y  <- c(0.29738378, -0.03496447, 0.37324175, 0)
+mean(y)
+z <- (c(0.35583000, 0.42363536, 0.08562279, 0.41354685, 0.37051899, 0.12054494, 0.29344484, 0.38710483  ))
+mean(z)
+#  After taking the mean value of the correlation coefficients by drug class, we conclude that the narrow effect drugs have
+# the highest agreement between studies.
+```
+
 6. Would you say that the sensitivity results for the two studies tend to agree?
+
+```{r}
+# They do not tend to agree, as the correlation values show weak relationship between studies, the highest value not reaching
+# even 0.5
+```
+
 
 7. For one of the targeted drugs, examine the cell lines that were sensitive ih the CCLE and/or GDSC. See if you can find out what types of cells these are by searching the online Cancer Cell Line Encyclopedia http://www.broadinstitute.org/ccle (this will prompt you to register with a username, password, and email address. If you prefer, you can also search the cell line on other websites). See if you can find out what types of cancers this drug is targeted for using the NCI cancer drug database at https://www.cancer.gov/about-cancer/treatment/drugs. Does the list of cell lines found to be sensitive in the two studies agree with this?
 
 ### Modeling the relation between two variables (drug concentration vs viability)
 
 1. Explore the response curves for several drug-cell line combinations. How many drugs-cell line combinations contain viability response values that would potentially enable them to be summarized into an IC50 value? You can answer this, for example, by checking whether there are viability values below 50%.
+
+```{r}
+rawFile <- "rawPharmacoData.csv"
+summarizedFile <- "summarizedPharmacoData.csv"
+if( !file.exists( rawFile ) ){
+    source("downloadData.R")
+}
+pharmacoData <- read.csv(rawFile)
+summarizedData <- read.csv(summarizedFile)
+library(ggplot2)
+library(dplyr)
+library(cowplot)
+plotResponse <- function(drugA, cellLineA, addPublishedIC50=TRUE ){
+  pharSub <- filter( pharmacoData, drug==drugA, cellLine==cellLineA )
+  sumSub <- filter( summarizedData, drug==drugA, cellLine==cellLineA )
+  p <- ggplot( pharSub, aes( log10(concentration), viability, col=study)) +
+      geom_point(size=2.1) + geom_line(lwd=1.1) + ylim(0, 150)
+  if( addPublishedIC50 ){
+      p <- p + geom_vline( sumSub, xintercept=log10( sumSub[,"ic50_CCLE"] ), col="#d95f02", linetype="longdash") +
+          geom_vline( xintercept=log10( sumSub[,"ic50_GDSC"]), col="#1b9e77", linetype="longdash") +
+          geom_hline( yintercept=50, col="#00000050", linetype="longdash")
+  }
+  p <- p + scale_colour_manual( values = c("CCLE" = "#d95f02", "GDSC" = "#1b9e77" ))
+  xlims <- xlim( range(log10(c(pharSub$concentration, sumSub$ic50_CCLE, sumSub$ic50_GDSC ) ) ) )
+  p + xlims
+}
+```
+
+
+
+```{r}
+#The plot define above will visualize the viability scores as a function
+#of the drug concentrations in each study. The vertical dotted lines
+#display the IC50 value published from each study. Let's start by
+#exploring how the response curve for the drug 17-AAG behaves in the
+#cell-line H4.  Notice that this drug was reported to have consistent viability
+#responses between the two studies.
+plotResponse( drugA="17-AAG", cellLineA="H4", TRUE )
+```
+
+
+```{r}
+plotResponse( drugA="Nilotinib", cellLineA="22RV1" )
+```
+
 
 2. Analyze the re-calculations of IC50 and AUCs from the drug 17-AAG in the H4 cell-line and the drug Nilotinib cell-line in the 22RV1 cell-line. See the figure below and asnwer: which statistic is more roboust, IC50 or AUC? Which statistic is more generalizable, IC50 or AUC? Justify your answer with examples and/or using the whole data recalculations from the *mySummarizedData* variable.
 
