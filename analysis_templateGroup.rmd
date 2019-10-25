@@ -1,5 +1,5 @@
 ---
-title: "Insert your team name here"
+title: "Los Davidez"
 output: html_document
 date: Replicathon 2017
 author: Team members names
@@ -114,6 +114,7 @@ str(summarizedPharmacoData)
 doses. Are stronger drug concentrations consistent with lower viability scores?
 
 ```{r}
+library(ggplot)
 ggplot(df_raw, aes(viability)) +
     geom_histogram() +
     facet_grid(doseID ~ .)
