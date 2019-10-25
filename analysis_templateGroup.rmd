@@ -95,6 +95,7 @@ issues? Biology?
 
 length(df_raw$viability[df_raw$viability > 0 & df_raw$viability < 100])
 #length(df_raw$cellLine)
+#Human Error could explain some of these abnormal values
 ```
 
 
