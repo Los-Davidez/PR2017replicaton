@@ -2,7 +2,10 @@
 title: "Los Davidez"
 output: html_document
 date: Replicathon 2017
-author: Team members names
+author: David Ramirez
+        Raul Barroso
+        Alejandra Flores
+        Lilliana Marrero
 ---
 
 ```{r setup, include=FALSE}
