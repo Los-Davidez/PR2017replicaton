@@ -165,7 +165,7 @@ df_summarized %>% group_by(drug) %>% summarize(correlation = cor(auc_CCLE, auc_G
 3. Based on the scatterplot and correlation values, would you say that they tend to agree? Why or why not?
 
 ```{r}
-#Based on the scatterplots and correlation values (0.66~), we can say that the auc scores for GDSC and CCLE have
+#Based on the scatterplots and correlation values (0.66~), we can say that the AUC scores for GDSC and CCLE have
 #a moderate positive correlation.
 ```
 
@@ -211,7 +211,7 @@ cor(df_summarized$auc_CCLE, df_summarized$auc_GDSC, method = "spearman") #0.54
 #ggplot(df_summarized, aes(ic50_CCLE, ic50_GDSC)) + geom_point()
 cor(df_summarized$ic50_CCLE, df_summarized$ic50_GDSC, method = "spearman") #0.55
 
-
+Both correlations coefficients varied greatly, which is unusual. Since IC50 has a Spearman correlation coefficient (0.55) bigger than its Pearson correlation coefficient (0.31), we can deduceits data is relatively monotonic but non-linear. According to AUC's Spearman correlation coefficient, it also has relatively monotonic data, and we can deduce it is also significantly linear thanks to its Pearson correlation coefficient (0.66).
 
 ```
 
