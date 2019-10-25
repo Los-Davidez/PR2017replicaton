@@ -18,6 +18,12 @@ The questions below will help guide you in your analyses and interpretation of r
 For each answer, include text by simply typing below the question. Include code in code blocks (include three back ticks at the start and end of each code block):
 
 ```{r}
+
+# Initializing and attaching data sets into their DFs
+
+library(ggplot2)
+library(tidyr)
+library(plyr)
 library(dplyr)
 attach(rawPharmacoData)
 attach(summarizedPharmacoData)
@@ -38,7 +44,6 @@ You may find it helpful to use the version control and code sharing system calle
 #length(df_uniq)
 #Cell lines = 2557
 
-# ===> Les parece? :
 length(unique(rawPharmacoData$cellLine))
 # There are 288 cell-lines contained in the data.
 ```
@@ -74,6 +79,9 @@ hist(df_raw$viability[df_raw$viability <= 257 ])
 
 #max(df_raw$viability)
 
+
+#As described, we expected values ranging from 0 to 100, however we got values above 100, which is unexpected,
+#maybe due to error.
 ```
 
 
@@ -98,12 +106,12 @@ head(summarizedPharmacoData)
 str(summarizedPharmacoData)
 
 # The data has string variables and double variables.
-# V1 = cellLine
-# V2 = drug
-# V3 = ic50_CCLE
-# V4 = auc_CCLE
-# V5 = ic50_GDSC
-# V6 = auc_GDSC
+# V1 = cellLine the different cell lines used to be tested on with the drugs
+# V2 = drug The drugs used
+# V3 = ic50_CCLE ic50 score of each cell line in the CCLE study
+# V4 = auc_CCLE AUC score of each cell line in the CCLE study
+# V5 = ic50_GDSC ic50 score of each cell line in the GDSC study
+# V6 = auc_GDSC AUC Score of each cell line on the GDSC study
 
 ```
 
@@ -114,10 +122,14 @@ str(summarizedPharmacoData)
 doses. Are stronger drug concentrations consistent with lower viability scores?
 
 ```{r}
-library(ggplot)
 ggplot(df_raw, aes(viability)) +
     geom_histogram() +
     facet_grid(doseID ~ .)
+
+
+# As seen in the box plots per dose id (1 being lowest concentration, 8 being highest), we see that
+# higher concentrations indeed are consistent with lower viability scores.
+
 ```
 
 
@@ -219,9 +231,6 @@ cor(df_summarized$ic50_CCLE, df_summarized$ic50_GDSC, method = "spearman") #0.55
 
 ### 0 AUC Score = 100% Resistance to drug (No effect)
 
-library(tidyr)
-library(plyr)
-library(dplyr)
 drugAvg <- df_summarized %>% 
               group_by(cellLine) %>%
               summarise(mean_ic50_CCLE = mean(-log10(ic50_CCLE/10^6)), 
@@ -396,6 +405,13 @@ plotResponse( drugA="Nilotinib", cellLineA="22RV1" )
 
 <img src="Figures/reproducible.png" width="400px" height="200px" />
 Modified from [Kirstie Whitaker](https://github.com/KirstieJane/).
+
+```{r}
+
+
+
+```
+
 
 3. Are the results more replicable if one uses the same code to calculate IC50 or AUC on the different datasets? Hint: you can use code from tutorial #3 to evaluate this.
 
