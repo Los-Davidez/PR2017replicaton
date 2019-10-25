@@ -62,7 +62,10 @@ df_gdsc <- df_raw[df_raw$study == 'GDSC',]
 #print(df_ccle)
 unique_conc_ccle <- unique(df_ccle$concentration)
 unique_conc_gdsc <- unique(df_gdsc$concentration)
-print(unique_conc_ccle)
+
+#CCLE concentrations used:
+print(unique_conc_ccle) 
+#GDSC concentrations used:
 print(unique_conc_gdsc)
 
 ```
